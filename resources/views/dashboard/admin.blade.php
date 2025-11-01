@@ -2,6 +2,9 @@
 
 @section('content')
     <div class="container mt-4">
+
+
+
         <h2 class="mb-4 fw-bold">
             {{ ucfirst(auth()->user()->role) }} Dashboard
             <small class="text-muted" style="font-size: 1rem;">
@@ -163,18 +166,5 @@
         </div>
     </div>
 
-    {{-- Hover effect styling --}}
-    <style>
-        .hover-card {
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-            border-radius: 12px;
-        }
-        .hover-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
-        }
-        h6.text-muted {
-            font-size: 0.9rem;
-        }
-    </style>
+
 @endsection

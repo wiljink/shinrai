@@ -2,6 +2,30 @@
 
 @section('content')
     <div class="container mt-5">
+
+        {{-- ✅ Flash Message for approve/reject --}}
+        @if(session('status'))
+            @php
+                // Determine alert color based on message content
+                $alertClass = str_contains(strtolower(session('status')), 'approved') ? 'success' :
+                              (str_contains(strtolower(session('status')), 'rejected') ? 'danger' : 'info');
+            @endphp
+            <div id="statusAlert" class="alert alert-{{ $alertClass }} alert-dismissible fade show" role="alert">
+                {{ session('status') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+
+            <script>
+                setTimeout(() => {
+                    const alert = document.getElementById('statusAlert');
+                    if (alert) {
+                        const bsAlert = bootstrap.Alert.getOrCreateInstance(alert);
+                        bsAlert.close();
+                    }
+                }, 5000);
+            </script>
+        @endif
+
         <div class="card shadow-sm">
             <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                 <h4 class="mb-0">Agent & Broker Management</h4>
@@ -11,13 +35,6 @@
             </div>
 
             <div class="card-body">
-                {{-- Success or Error Messages --}}
-                @if(session('success'))
-                    <div class="alert alert-success">{{ session('success') }}</div>
-                @endif
-                @if(session('error'))
-                    <div class="alert alert-danger">{{ session('error') }}</div>
-                @endif
 
                 {{-- Users Table --}}
                 <div class="table-responsive">
@@ -71,9 +88,9 @@
 
                                 {{-- Action Buttons --}}
                                 <td>
-                                    {{-- Only admin can approve/reject --}}
                                     @if(auth()->user()->role === 'admin')
                                         @if($agent->is_approved == 0)
+                                            {{-- Approve --}}
                                             <form action="{{ route('agents.approve', $agent->id) }}" method="POST" class="d-inline">
                                                 @csrf
                                                 <button type="submit" class="btn btn-success btn-sm">
@@ -81,6 +98,7 @@
                                                 </button>
                                             </form>
 
+                                            {{-- Reject --}}
                                             <form action="{{ route('agents.reject', $agent->id) }}" method="POST" class="d-inline">
                                                 @csrf
                                                 <button type="submit" class="btn btn-danger btn-sm">
@@ -110,4 +128,19 @@
             </div>
         </div>
     </div>
+
+    {{-- Hover effect styling --}}
+    <style>
+        .hover-card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            border-radius: 12px;
+        }
+        .hover-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+        }
+        h6.text-muted {
+            font-size: 0.9rem;
+        }
+    </style>
 @endsection

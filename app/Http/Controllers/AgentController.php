@@ -38,7 +38,7 @@ class AgentController extends Controller
         $agent->is_approved = 1;
         $agent->save();
 
-        return redirect()->route('agents.index')
+        return redirect()->route('admin.agents.index')
             ->with('status', 'Agent approved successfully.');
     }
 

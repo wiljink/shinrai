@@ -97,9 +97,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/admin/dashboard', [DashboardController::class, 'admin'])->name('admin.dashboard');
     Route::get('/agent/dashboard', [DashboardController::class, 'agent'])->name('agent.dashboard');
 
-    // ✅ Admin: View all agents for approval
 
-    Route::get('/admin/agents', [AgentController::class, 'index'])->name('admin.agents.index');
     // ✅ Admin: View all agents
     Route::get('/admin/agents', [AgentController::class, 'index'])->name('admin.agents.index');
 
