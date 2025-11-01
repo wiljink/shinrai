@@ -16,7 +16,8 @@ class AgentController extends Controller
             abort(403, 'Unauthorized access.');
         }
 
-        $agents = User::whereRaw('LOWER(role) = "agent"')
+        // Get users with role 'agent' or 'broker'
+        $agents = User::whereIn('role', ['agent', 'broker'])
             ->with('branch')
             ->get();
 

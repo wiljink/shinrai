@@ -11,17 +11,28 @@
 
         <!-- Stats Row -->
         <div class="row g-4">
-            <!-- Total Registration -->
+            <!-- Total Registrations (Agents + Brokers) -->
             <div class="col-md-2 col-sm-6">
                 <a href="{{ route('admin.agents.index') }}" class="text-decoration-none text-dark">
                     <div class="card shadow-sm border-0 text-center h-100 hover-card">
                         <div class="card-body">
                             <i class="bi bi-person-plus fs-2 text-primary mb-2"></i>
-                            <h6 class="text-muted">Total Registration</h6>
-                            <h3 class="fw-bold">{{ $totalAgents }}</h3>
+                            <h6 class="text-muted">Total Registrations</h6>
+                            <h3 class="fw-bold">{{ $totalRegistrations }}</h3>
                         </div>
                     </div>
                 </a>
+            </div>
+
+            <!-- Total Buyers -->
+            <div class="col-md-2 col-sm-6">
+                <div class="card shadow-sm border-0 text-center h-100 hover-card">
+                    <div class="card-body">
+                        <i class="bi bi-people fs-2 text-warning mb-2"></i>
+                        <h6 class="text-muted">Total Buyers</h6>
+                        <h3 class="fw-bold">{{ $totalBuyers }}</h3>
+                    </div>
+                </div>
             </div>
 
             <!-- Properties -->

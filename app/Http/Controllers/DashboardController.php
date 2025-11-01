@@ -18,26 +18,35 @@ class DashboardController extends Controller
     // Admin Dashboard
     public function admin()
     {
+        // Only admin can access
         if (!auth()->check() || auth()->user()->role !== 'admin') {
             abort(403, 'Unauthorized.');
         }
 
-        $totalAgents = User::where('role', 'agent')->count();
+        // Combine agents + brokers
+        $totalRegistrations = User::whereIn('role', ['agent', 'broker'])->count();
+
+        // Count buyers separately
+        $totalBuyers = User::where('role', 'buyer')->count();
+
+        // Other stats
         $totalProperties = Property::count();
         $totalSales = Sale::count();
         $totalCollections = Collection::sum('amount');
         $totalExpenses = Expense::sum('amount');
-        $totalIncentives = Incentive::sum('amount'); // 👈 add this line
+        $totalIncentives = Incentive::sum('amount');
 
         return view('dashboard.admin', compact(
-            'totalAgents',
+            'totalRegistrations',
+            'totalBuyers',
             'totalProperties',
             'totalSales',
             'totalCollections',
             'totalExpenses',
-            'totalIncentives' // 👈 and include it here
+            'totalIncentives'
         ));
     }
+
 
     public function agent()
     {

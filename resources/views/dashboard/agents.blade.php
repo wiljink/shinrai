@@ -4,22 +4,22 @@
     <div class="container mt-5">
         <div class="card shadow-sm">
             <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                <h4 class="mb-0">Agent Management</h4>
+                <h4 class="mb-0">Agent & Broker Management</h4>
                 <a href="{{ route('admin.dashboard') }}" class="btn btn-light btn-sm">
                     <i class="bi bi-arrow-left"></i> Back to Dashboard
                 </a>
             </div>
 
             <div class="card-body">
-                {{-- ✅ Success or Error Messages --}}
-                @if (session('success'))
+                {{-- Success or Error Messages --}}
+                @if(session('success'))
                     <div class="alert alert-success">{{ session('success') }}</div>
                 @endif
-                @if (session('error'))
+                @if(session('error'))
                     <div class="alert alert-danger">{{ session('error') }}</div>
                 @endif
 
-                {{-- ✅ Agent Table --}}
+                {{-- Users Table --}}
                 <div class="table-responsive">
                     <table class="table table-bordered align-middle">
                         <thead class="table-light">
@@ -41,14 +41,22 @@
                                 <td>{{ $agent->email }}</td>
                                 <td>{{ $agent->branch->name ?? '—' }}</td>
 
-                                {{-- ✅ Retrieve Role --}}
+                                {{-- Role Badge --}}
                                 <td>
-                                        <span class="badge bg-info text-dark">
-                                            {{ ucfirst($agent->role ?? 'Agent') }}
-                                        </span>
+                                    @php
+                                        $roleColors = [
+                                            'buyer' => 'secondary',
+                                            'agent' => 'info text-dark',
+                                            'broker' => 'primary text-white',
+                                            'admin' => 'dark text-white'
+                                        ];
+                                    @endphp
+                                    <span class="badge bg-{{ $roleColors[$agent->role] ?? 'info' }}">
+                                    {{ ucfirst($agent->role ?? 'Agent') }}
+                                </span>
                                 </td>
 
-                                {{-- ✅ Status based on is_approved --}}
+                                {{-- Status --}}
                                 <td>
                                     @if($agent->is_approved == 1)
                                         <span class="badge bg-success">Approved</span>
@@ -61,33 +69,38 @@
                                     @endif
                                 </td>
 
-                                {{-- ✅ Action Buttons --}}
+                                {{-- Action Buttons --}}
                                 <td>
-                                    @if($agent->is_approved == 0)
-                                        <form action="{{ route('agents.approve', $agent->id) }}" method="POST" class="d-inline">
-                                            @csrf
-                                            <button type="submit" class="btn btn-success btn-sm">
-                                                <i class="bi bi-check-circle"></i> Approve
-                                            </button>
-                                        </form>
+                                    {{-- Only admin can approve/reject --}}
+                                    @if(auth()->user()->role === 'admin')
+                                        @if($agent->is_approved == 0)
+                                            <form action="{{ route('agents.approve', $agent->id) }}" method="POST" class="d-inline">
+                                                @csrf
+                                                <button type="submit" class="btn btn-success btn-sm">
+                                                    <i class="bi bi-check-circle"></i> Approve
+                                                </button>
+                                            </form>
 
-                                        <form action="{{ route('agents.reject', $agent->id) }}" method="POST" class="d-inline">
-                                            @csrf
-                                            <button type="submit" class="btn btn-danger btn-sm">
-                                                <i class="bi bi-x-circle"></i> Reject
-                                            </button>
-                                        </form>
-                                    @elseif($agent->is_approved == 1)
-                                        <span class="text-success fw-bold">Approved</span>
-                                    @elseif($agent->is_approved == 2)
-                                        <span class="text-danger fw-bold">Rejected</span>
+                                            <form action="{{ route('agents.reject', $agent->id) }}" method="POST" class="d-inline">
+                                                @csrf
+                                                <button type="submit" class="btn btn-danger btn-sm">
+                                                    <i class="bi bi-x-circle"></i> Reject
+                                                </button>
+                                            </form>
+                                        @elseif($agent->is_approved == 1)
+                                            <span class="text-success fw-bold">Approved</span>
+                                        @elseif($agent->is_approved == 2)
+                                            <span class="text-danger fw-bold">Rejected</span>
+                                        @endif
+                                    @else
+                                        <span class="text-muted">No actions available</span>
                                     @endif
                                 </td>
                             </tr>
                         @empty
                             <tr>
                                 <td colspan="7" class="text-center text-muted">
-                                    No agents found.
+                                    No agents or brokers found.
                                 </td>
                             </tr>
                         @endforelse
