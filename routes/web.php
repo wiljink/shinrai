@@ -15,6 +15,7 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\RegisteredUserController;
+use App\Http\Controllers\AgentController;
 
 // ================================
 // Public / Landing Page
@@ -30,20 +31,27 @@ Route::get('/', function () {
 
 
 // ================================
-// Authentication Routes
+// Guest Routes (Unauthenticated Users)
 // ================================
-Route::get('/login', [AuthenticatedSessionController::class, 'create'])->name('login');
-Route::post('/login', [AuthenticatedSessionController::class, 'store']);
+Route::middleware('guest')->group(function () {
+    // Login
+    Route::get('/login', [AuthenticatedSessionController::class, 'create'])->name('login');
+    Route::post('/login', [AuthenticatedSessionController::class, 'store']);
+
+    // Registration (Fixed ✅)
+    Route::get('/register', [RegisteredUserController::class, 'create'])->name('register');
+    Route::post('/register', [RegisteredUserController::class, 'store']);
+});
+
+
+// ================================
+// Logout (accessible to authenticated users)
+// ================================
 Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
 
-// ================================
-// Registration
-// ================================
-Route::get('/register', [RegisteredUserController::class, 'create'])->name('register');
-Route::post('/register', [RegisteredUserController::class, 'store']);
 
 // ================================
-// Protected Routes
+// Protected Routes (Authenticated Users Only)
 // ================================
 Route::middleware(['auth'])->group(function () {
 
@@ -75,10 +83,9 @@ Route::middleware(['auth'])->group(function () {
     // Expenses
     Route::resource('expenses', ExpenseController::class);
 
-    // Reports - individual named routes
+    // Reports
     Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
     Route::post('reports/generate', [ReportController::class, 'generate'])->name('reports.generate');
-
     Route::get('reports/profit-loss', [ReportController::class, 'profitLoss'])->name('reports.profitLoss');
     Route::get('reports/sales', [ReportController::class, 'salesReport'])->name('reports.sales');
     Route::get('reports/receivables', [ReportController::class, 'receivableReport'])->name('reports.receivables');
@@ -86,11 +93,18 @@ Route::middleware(['auth'])->group(function () {
     Route::get('reports/expenses', [ReportController::class, 'expenseReport'])->name('reports.expenses');
     Route::get('reports/incentives', [ReportController::class, 'incentivesReport'])->name('reports.incentives');
 
-    // Admin Dashboard
+    // Dashboards
     Route::get('/admin/dashboard', [DashboardController::class, 'admin'])->name('admin.dashboard');
-
-    // Agent Dashboard (if needed)
     Route::get('/agent/dashboard', [DashboardController::class, 'agent'])->name('agent.dashboard');
+
+    // ✅ Admin: View all agents for approval
+
+    Route::get('/admin/agents', [AgentController::class, 'index'])->name('admin.agents.index');
+    // ✅ Admin: View all agents
+    Route::get('/admin/agents', [AgentController::class, 'index'])->name('admin.agents.index');
+
+    // ✅ Admin: Approve a specific agent
+    Route::post('/admin/agents/{id}/approve', [AgentController::class, 'approve'])->name('agents.approve');
 
     // Fallback for undefined routes
     Route::fallback(function () {
@@ -99,5 +113,5 @@ Route::middleware(['auth'])->group(function () {
 });
 
 
-// ✅ Add this line LAST in your file
-require __DIR__.'/auth.php';
+// ✅ Always include this at the bottom
+require __DIR__ . '/auth.php';

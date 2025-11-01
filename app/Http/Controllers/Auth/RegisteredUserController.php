@@ -27,29 +27,30 @@ class RegisteredUserController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:' . User::class],
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
-            'role' => ['required', 'in:admin,agent'],
-            'branch_id' => ['nullable', 'integer'],
+            'role' => 'required|in:broker,agent,buyer',
+            'first_name' => 'required|string|max:255',
+            'last_name' => 'required|string|max:255',
+            'invited_by' => 'nullable|string|max:255',
+            'birthday' => 'nullable|date',
+            'gender' => 'nullable|in:male,female',
+            'email' => 'required|string|email|max:255|unique:users',
+            'password' => 'required|string', // no min, no confirm
         ]);
 
-        // ✅ Create the user but keep them pending admin approval
         $user = User::create([
-            'name' => $request->name,
+            'role' => $request->role,
+            'first_name' => $request->first_name,
+            'last_name' => $request->last_name,
+            'invited_by' => $request->invited_by,
+            'birthday' => $request->birthday,
+            'gender' => $request->gender,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'role' => $request->role,
-            'branch_id' => $request->branch_id,
-            'is_approved' => 0, // 👈 mark as not approved
+            'is_approved' => false,
         ]);
 
-        event(new Registered($user));
-
-        // ❌ remove Auth::login($user)
-        // ✅ replace it with redirect + message
-        return redirect()
-            ->route('login')
+        return redirect('/')
             ->with('status', 'Your account has been created and is pending admin approval.');
+        }
+
     }
-}

@@ -5,17 +5,14 @@
         <h2 class="mb-4 fw-bold">Admin Dashboard</h2>
 
         <!-- Stats Row -->
-        <div class="row g-4 text-center mb-5">
-            <!-- Total Agents -->
-            <div class="col-md-2 col-sm-6">
-                <div class="card shadow-sm h-100">
-                    <div class="card-body">
-                        <i class="bi bi-people fs-2 text-primary mb-2"></i>
-                        <h6 class="text-muted">Total Agents</h6>
-                        <h3 class="fw-bold">{{ $totalAgents ?? 0 }}</h3>
-                    </div>
+        <div class="dashboard-cards" style="display: flex; gap: 20px; flex-wrap: wrap;">
+            <a href="{{ route('admin.agents.index') }}" style="text-decoration: none; color: inherit;">
+                <div class="card" style="padding: 20px; border: 1px solid #ddd; border-radius: 10px; text-align: center; width: 180px;">
+                    <i class="fas fa-users" style="font-size: 2rem; color: #007bff;"></i>
+                    <h5>Total Agents</h5>
+                    <h2>{{ $totalAgents }}</h2>
                 </div>
-            </div>
+            </a>
 
             <!-- Total Properties -->
             <div class="col-md-2 col-sm-6">

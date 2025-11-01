@@ -144,27 +144,29 @@
     </div>
 
     <div class="form-container">
-        <!-- ✅ STATUS / ERROR MESSAGES -->
-        @if (session('status'))
-            <div style="background:#e6ffed; color:#256029; border:1px solid #a3e6a3; padding:10px;
-                        border-radius:8px; margin-bottom:15px; text-align:center;">
-                {{ session('status') }}
-            </div>
-        @endif
 
-        @if ($errors->any())
-            <div style="background:#ffe6e6; color:#a33; border:1px solid #f5bcbc; padding:10px;
-                        border-radius:8px; margin-bottom:15px; text-align:center;">
-                @foreach ($errors->all() as $error)
-                    <div>{{ $error }}</div>
-                @endforeach
-            </div>
-        @endif
-        <!-- ✅ END STATUS / ERROR MESSAGES -->
 
         <!-- Login Form -->
         <form id="loginForm" action="{{ route('login') }}" method="POST">
             @csrf
+            {{-- ✅ STATUS MESSAGE (only shows for login) --}}
+            @if (session('status'))
+                <div style="background:#e6ffed; color:#256029; border:1px solid #a3e6a3; padding:10px;
+                    border-radius:8px; margin-bottom:15px; text-align:center;">
+                    {{ session('status') }}
+                </div>
+            @endif
+
+            {{-- ✅ Login errors --}}
+            @if ($errors->any() && old('form_type') == 'login')
+                <div style="background:#ffe6e6; color:#a33; border:1px solid #f5bcbc; padding:10px;
+                    border-radius:8px; margin-bottom:15px; text-align:center;">
+                    @foreach ($errors->all() as $error)
+                        <div>{{ $error }}</div>
+                    @endforeach
+                </div>
+            @endif
+
             <div class="form-group">
                 <input type="email" name="email" placeholder="Email" required>
             </div>
@@ -179,7 +181,7 @@
             @csrf
             <div class="form-group">
                 <select name="role" required>
-                    <option value="">Are you a?</option>
+                    <option value="">I am a?</option>
                     <option value="broker">Broker</option>
                     <option value="agent">Agent</option>
                     <option value="buyer">Buyer</option>
