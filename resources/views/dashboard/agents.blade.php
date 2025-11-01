@@ -28,6 +28,7 @@
                             <th>Name</th>
                             <th>Email</th>
                             <th>Branch</th>
+                            <th>Role</th>
                             <th>Status</th>
                             <th width="220">Action</th>
                         </tr>
@@ -39,6 +40,13 @@
                                 <td>{{ $agent->first_name }} {{ $agent->last_name }}</td>
                                 <td>{{ $agent->email }}</td>
                                 <td>{{ $agent->branch->name ?? '—' }}</td>
+
+                                {{-- ✅ Retrieve Role --}}
+                                <td>
+                                        <span class="badge bg-info text-dark">
+                                            {{ ucfirst($agent->role ?? 'Agent') }}
+                                        </span>
+                                </td>
 
                                 {{-- ✅ Status based on is_approved --}}
                                 <td>
@@ -78,7 +86,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="text-center text-muted">
+                                <td colspan="7" class="text-center text-muted">
                                     No agents found.
                                 </td>
                             </tr>

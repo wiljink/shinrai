@@ -1,22 +1,32 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="container">
-        <h2 class="mb-4 fw-bold">Admin Dashboard</h2>
+    <div class="container mt-4">
+        <h2 class="mb-4 fw-bold">
+            {{ ucfirst(auth()->user()->role) }} Dashboard
+            <small class="text-muted" style="font-size: 1rem;">
+                (Role: {{ ucfirst(auth()->user()->role) }})
+            </small>
+        </h2>
 
         <!-- Stats Row -->
-        <div class="dashboard-cards" style="display: flex; gap: 20px; flex-wrap: wrap;">
-            <a href="{{ route('admin.agents.index') }}" style="text-decoration: none; color: inherit;">
-                <div class="card" style="padding: 20px; border: 1px solid #ddd; border-radius: 10px; text-align: center; width: 180px;">
-                    <i class="fas fa-users" style="font-size: 2rem; color: #007bff;"></i>
-                    <h5>Total Agents</h5>
-                    <h2>{{ $totalAgents }}</h2>
-                </div>
-            </a>
-
-            <!-- Total Properties -->
+        <div class="row g-4">
+            <!-- Total Registration -->
             <div class="col-md-2 col-sm-6">
-                <div class="card shadow-sm h-100">
+                <a href="{{ route('admin.agents.index') }}" class="text-decoration-none text-dark">
+                    <div class="card shadow-sm border-0 text-center h-100 hover-card">
+                        <div class="card-body">
+                            <i class="bi bi-person-plus fs-2 text-primary mb-2"></i>
+                            <h6 class="text-muted">Total Registration</h6>
+                            <h3 class="fw-bold">{{ $totalAgents }}</h3>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Properties -->
+            <div class="col-md-2 col-sm-6">
+                <div class="card shadow-sm border-0 text-center h-100 hover-card">
                     <div class="card-body">
                         <i class="bi bi-building fs-2 text-success mb-2"></i>
                         <h6 class="text-muted">Properties</h6>
@@ -25,9 +35,9 @@
                 </div>
             </div>
 
-            <!-- Total Sales -->
+            <!-- Sales -->
             <div class="col-md-2 col-sm-6">
-                <div class="card shadow-sm h-100">
+                <div class="card shadow-sm border-0 text-center h-100 hover-card">
                     <div class="card-body">
                         <i class="bi bi-cart-check fs-2 text-warning mb-2"></i>
                         <h6 class="text-muted">Sales</h6>
@@ -36,9 +46,9 @@
                 </div>
             </div>
 
-            <!-- Total Collections -->
+            <!-- Collections -->
             <div class="col-md-2 col-sm-6">
-                <div class="card shadow-sm h-100">
+                <div class="card shadow-sm border-0 text-center h-100 hover-card">
                     <div class="card-body">
                         <i class="bi bi-cash-stack fs-2 text-info mb-2"></i>
                         <h6 class="text-muted">Collections</h6>
@@ -47,9 +57,9 @@
                 </div>
             </div>
 
-            <!-- Total Expenses -->
+            <!-- Expenses -->
             <div class="col-md-2 col-sm-6">
-                <div class="card shadow-sm h-100">
+                <div class="card shadow-sm border-0 text-center h-100 hover-card">
                     <div class="card-body">
                         <i class="bi bi-receipt fs-2 text-danger mb-2"></i>
                         <h6 class="text-muted">Expenses</h6>
@@ -58,9 +68,9 @@
                 </div>
             </div>
 
-            <!-- Total Incentives -->
+            <!-- Incentives -->
             <div class="col-md-2 col-sm-6">
-                <div class="card shadow-sm h-100">
+                <div class="card shadow-sm border-0 text-center h-100 hover-card">
                     <div class="card-body">
                         <i class="bi bi-gift fs-2 text-secondary mb-2"></i>
                         <h6 class="text-muted">Incentives</h6>
@@ -70,12 +80,13 @@
             </div>
         </div>
 
-        <!-- Reports Row -->
-        <h4 class="mb-3">Reports</h4>
+        <!-- Reports Section -->
+        <h4 class="mt-5 mb-3 fw-semibold">Reports</h4>
+
         <div class="row g-4 text-center">
             <div class="col-md-2 col-sm-6">
-                <a href="{{ route('reports.profitLoss') }}" class="text-decoration-none">
-                    <div class="card shadow-sm h-100">
+                <a href="{{ route('reports.profitLoss') }}" class="text-decoration-none text-dark">
+                    <div class="card shadow-sm border-0 h-100 hover-card">
                         <div class="card-body">
                             <i class="bi bi-graph-down-arrow fs-2 text-danger mb-2"></i>
                             <h6 class="fw-bold">Profit & Loss</h6>
@@ -85,8 +96,8 @@
             </div>
 
             <div class="col-md-2 col-sm-6">
-                <a href="{{ route('reports.sales') }}" class="text-decoration-none">
-                    <div class="card shadow-sm h-100">
+                <a href="{{ route('reports.sales') }}" class="text-decoration-none text-dark">
+                    <div class="card shadow-sm border-0 h-100 hover-card">
                         <div class="card-body">
                             <i class="bi bi-bar-chart fs-2 text-primary mb-2"></i>
                             <h6 class="fw-bold">Sales Report</h6>
@@ -96,8 +107,8 @@
             </div>
 
             <div class="col-md-2 col-sm-6">
-                <a href="{{ route('reports.receivables') }}" class="text-decoration-none">
-                    <div class="card shadow-sm h-100">
+                <a href="{{ route('reports.receivables') }}" class="text-decoration-none text-dark">
+                    <div class="card shadow-sm border-0 h-100 hover-card">
                         <div class="card-body">
                             <i class="bi bi-wallet2 fs-2 text-success mb-2"></i>
                             <h6 class="fw-bold">Receivables</h6>
@@ -107,8 +118,8 @@
             </div>
 
             <div class="col-md-2 col-sm-6">
-                <a href="{{ route('reports.commissions') }}" class="text-decoration-none">
-                    <div class="card shadow-sm h-100">
+                <a href="{{ route('reports.commissions') }}" class="text-decoration-none text-dark">
+                    <div class="card shadow-sm border-0 h-100 hover-card">
                         <div class="card-body">
                             <i class="bi bi-cash-coin fs-2 text-warning mb-2"></i>
                             <h6 class="fw-bold">Commissions</h6>
@@ -118,8 +129,8 @@
             </div>
 
             <div class="col-md-2 col-sm-6">
-                <a href="{{ route('reports.expenses') }}" class="text-decoration-none">
-                    <div class="card shadow-sm h-100">
+                <a href="{{ route('reports.expenses') }}" class="text-decoration-none text-dark">
+                    <div class="card shadow-sm border-0 h-100 hover-card">
                         <div class="card-body">
                             <i class="bi bi-receipt-cutoff fs-2 text-danger mb-2"></i>
                             <h6 class="fw-bold">Expenses</h6>
@@ -129,8 +140,8 @@
             </div>
 
             <div class="col-md-2 col-sm-6">
-                <a href="{{ route('reports.incentives') }}" class="text-decoration-none">
-                    <div class="card shadow-sm h-100">
+                <a href="{{ route('reports.incentives') }}" class="text-decoration-none text-dark">
+                    <div class="card shadow-sm border-0 h-100 hover-card">
                         <div class="card-body">
                             <i class="bi bi-award fs-2 text-secondary mb-2"></i>
                             <h6 class="fw-bold">Incentives</h6>
@@ -140,4 +151,19 @@
             </div>
         </div>
     </div>
+
+    {{-- Hover effect styling --}}
+    <style>
+        .hover-card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            border-radius: 12px;
+        }
+        .hover-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+        }
+        h6.text-muted {
+            font-size: 0.9rem;
+        }
+    </style>
 @endsection

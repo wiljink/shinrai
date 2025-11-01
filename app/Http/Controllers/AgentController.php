@@ -12,13 +12,13 @@ class AgentController extends Controller
      */
     public function index()
     {
-        // Restrict access to admin only
         if (auth()->user()->role !== 'admin') {
             abort(403, 'Unauthorized access.');
         }
 
-        // Get all users with role 'agent'
-        $agents = User::where('role', 'agent')->get();
+        $agents = User::whereRaw('LOWER(role) = "agent"')
+            ->with('branch')
+            ->get();
 
         return view('dashboard.agents', compact('agents'));
     }
