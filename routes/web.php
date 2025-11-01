@@ -105,7 +105,7 @@ Route::middleware(['auth'])->group(function () {
 
     // ✅ Admin: Approve a specific agent
     Route::post('/admin/agents/{id}/approve', [AgentController::class, 'approve'])->name('agents.approve');
-
+    Route::post('/admin/agents/{id}/reject', [AgentController::class, 'reject'])->name('agents.reject');
     // Fallback for undefined routes
     Route::fallback(function () {
         return redirect()->route('login');

@@ -55,7 +55,7 @@ class AgentController extends Controller
         $agent->is_approved = 0;
         $agent->save();
 
-        return redirect()->route('agents.index')
+        return redirect()->route('admin.agents.index')
             ->with('status', 'Agent deactivated successfully.');
     }
 }
