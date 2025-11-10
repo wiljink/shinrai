@@ -56,18 +56,23 @@ class DashboardController extends Controller
 
         $user = auth()->user();
 
-        $myProperties = Property::where('agent_id', $user->id)->count();
-        $mySales = Sale::where('agent_id', $user->id)->count();
-        $myCollections = Collection::where('agent_id', $user->id)->sum('amount');
-        $myCommissions = Commission::where('agent_id', $user->id)->sum('amount');
-        $myIncentives = Incentive::where('agent_id', $user->id)->sum('amount');
+        // Count distinct buyers from sales
+        $totalBuyers = Sale::where('agent_id', $user->id)
+            ->distinct('buyer_name')
+            ->count('buyer_name');
+
+        $totalProperties = Property::where('agent_id', $user->id)->count();
+        $totalSales = Sale::where('agent_id', $user->id)->count();
+        $totalCollections = Collection::where('agent_id', $user->id)->sum('amount');
+        $totalIncentives = Incentive::where('agent_id', $user->id)->sum('amount');
 
         return view('dashboard.agent', compact(
-            'myProperties',
-            'mySales',
-            'myCollections',
-            'myCommissions',
-            'myIncentives'
+            'totalBuyers',
+            'totalProperties',
+            'totalSales',
+            'totalCollections',
+            'totalIncentives'
         ));
     }
+
 }

@@ -9,7 +9,6 @@
         "php": "^8.2",
         "barryvdh/laravel-dompdf": "^3.1",
         "laravel/framework": "^12.0",
-        "laravel/tinker": "^2.10.1",
         "maatwebsite/excel": "^3.1",
         "spatie/laravel-permission": "^6.21"
     },
@@ -19,10 +18,12 @@
         "laravel/pail": "^1.2.2",
         "laravel/pint": "^1.24",
         "laravel/sail": "^1.41",
+        "laravel/tinker": "^2.10",
         "mockery/mockery": "^1.6",
         "nunomaduro/collision": "^8.6",
         "pestphp/pest": "^3.8",
-        "pestphp/pest-plugin-laravel": "^3.2"
+        "pestphp/pest-plugin-laravel": "^3.2",
+        "psy/psysh": "^0.12.14"
     },
     "autoload": {
         "psr-4": {

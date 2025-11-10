@@ -24,7 +24,8 @@
             display: block;
             padding: 12px 20px;
         }
-        .sidebar a:hover {
+        .sidebar a:hover,
+        .sidebar a.active {
             background-color: #495057;
             color: #fff;
         }
@@ -60,39 +61,74 @@
 <div class="sidebar" id="sidebar">
     <h4 class="p-3 border-bottom text-white fw-bold text-center">Shinrai</h4>
 
-    <!-- Dashboard Menu -->
-    <a href="{{ route('admin.dashboard') }}" class="fw-bold {{ request()->routeIs('admin.dashboard') ? 'bg-primary text-white' : '' }}">
-        <i class="bi bi-speedometer2"></i> Dashboard
+    @php
+        $role = auth()->user()->role ?? null;
+    @endphp
+
+    {{-- ================= ADMIN MENU ================= --}}
+    @if($role === 'admin')
+        <a href="{{ route('admin.dashboard') }}" class="fw-bold {{ request()->routeIs('admin.dashboard') ? 'bg-primary text-white' : '' }}">
+            <i class="bi bi-speedometer2"></i> Dashboard
+        </a>
+
+        <a href="{{ route('properties.index') }}"><i class="bi bi-building"></i> Properties</a>
+        <a href="{{ route('sales.index') }}"><i class="bi bi-cart-check"></i> Sales</a>
+        <a href="{{ route('collections.index') }}"><i class="bi bi-cash-stack"></i> Collections</a>
+        <a href="{{ route('commissions.index') }}"><i class="bi bi-cash-coin"></i> Commissions</a>
+        <a href="{{ route('incentives.index') }}"><i class="bi bi-gift"></i> Incentives</a>
+        <a href="{{ route('ledgers.index') }}"><i class="bi bi-journal-text"></i> Ledgers</a>
+        <a href="{{ route('expenses.index') }}"><i class="bi bi-receipt"></i> Expenses</a>
+        <a href="{{ route('projects.index') }}"><i class="bi bi-diagram-3"></i> Projects</a>
+        <a href="{{ route('branches.index') }}"><i class="bi bi-diagram-2"></i> Branches</a>
+
+        <!-- Reports Section -->
+        <div class="border-top mt-3">
+            <h6 class="p-3 text-white">Reports</h6>
+            <a href="{{ route('reports.profitLoss') }}"><i class="bi bi-graph-down-arrow"></i> Profit & Loss</a>
+            <a href="{{ route('reports.sales') }}"><i class="bi bi-bar-chart"></i> Sales Report</a>
+            <a href="{{ route('reports.receivables') }}"><i class="bi bi-wallet2"></i> Receivables</a>
+            <a href="{{ route('reports.commissions') }}"><i class="bi bi-cash-coin"></i> Commissions</a>
+            <a href="{{ route('reports.expenses') }}"><i class="bi bi-receipt-cutoff"></i> Expenses</a>
+            <a href="{{ route('reports.incentives') }}"><i class="bi bi-award"></i> Incentives</a>
+        </div>
+
+     <!-- Settings Section -->
+<div class="border-top mt-3">
+    <h6 class="p-3 text-white">Settings</h6>
+
+    <!-- Manage Accounts -->
+    <a href="{{ route('admin.users.index') }}"
+       class="d-block px-3 py-2 {{ request()->routeIs('admin.users.index') ? 'bg-primary text-white' : 'text-white' }}">
+        <i class="bi bi-people"></i> Manage Accounts
     </a>
 
-    <!-- Other Menu Items -->
-    <a href="{{ route('properties.index') }}"><i class="bi bi-building"></i> Properties</a>
-    <a href="{{ route('sales.index') }}"><i class="bi bi-cart-check"></i> Sales</a>
-    <a href="{{ route('collections.index') }}"><i class="bi bi-cash-stack"></i> Collections</a>
-    <a href="{{ route('commissions.index') }}"><i class="bi bi-cash-coin"></i> Commissions</a>
-    <a href="{{ route('incentives.index') }}"><i class="bi bi-gift"></i> Incentives</a>
-    <a href="{{ route('ledgers.index') }}"><i class="bi bi-journal-text"></i> Ledgers</a>
-    <a href="{{ route('expenses.index') }}"><i class="bi bi-receipt"></i> Expenses</a>
-    <a href="{{ route('projects.index') }}"><i class="bi bi-diagram-3"></i> Projects</a>
-    <a href="{{ route('branches.index') }}"><i class="bi bi-diagram-2"></i> Branches</a>
+    <a href="{{ route('admin.commissions.index') }}"
+   class="d-block px-3 py-2 {{ request()->routeIs('admin.commissions.*') ? 'bg-primary text-white' : 'text-white' }}">
+    <i class="bi bi-cash-stack"></i> Manage Commissions
+</a>
 
-    <!-- Reports Section -->
-    <div class="border-top mt-3">
-        <h6 class="p-3 text-white">Reports</h6>
-        <a href="{{ route('reports.profitLoss') }}"><i class="bi bi-graph-down-arrow"></i> Profit & Loss</a>
-        <a href="{{ route('reports.sales') }}"><i class="bi bi-bar-chart"></i> Sales Report</a>
-        <a href="{{ route('reports.receivables') }}"><i class="bi bi-wallet2"></i> Receivables</a>
-        <a href="{{ route('reports.commissions') }}"><i class="bi bi-cash-coin"></i> Commissions</a>
-        <a href="{{ route('reports.expenses') }}"><i class="bi bi-receipt-cutoff"></i> Expenses</a>
-        <a href="{{ route('reports.incentives') }}"><i class="bi bi-award"></i> Incentives</a>
-    </div>
+</div>
+
+    @endif
+
+    {{-- ================= AGENT MENU ================= --}}
+    @if($role === 'agent')
+        <a href="{{ route('agent.dashboard') }}" class="fw-bold {{ request()->routeIs('agent.dashboard') ? 'bg-primary text-white' : '' }}">
+            <i class="bi bi-speedometer2"></i> Dashboard
+        </a>
+
+        <a href="{{ route('properties.index') }}"><i class="bi bi-building"></i> Properties</a>
+        <a href="{{ route('sales.index') }}"><i class="bi bi-cart-check"></i> Sales</a>
+        <a href="{{ route('collections.index') }}"><i class="bi bi-cash-stack"></i> Collections</a>
+        <a href="{{ route('commissions.index') }}"><i class="bi bi-cash-coin"></i> Commissions</a>
+        <a href="{{ route('incentives.index') }}"><i class="bi bi-gift"></i> Incentives</a>
+    @endif
 </div>
 
 <!-- Main Content -->
 <div class="content" id="content">
-    <!-- Topbar Buttons -->
     <div class="topbar-buttons">
-        <a href="{{ route('admin.dashboard') }}" class="btn btn-sm btn-primary">
+        <a href="{{ route($role . '.dashboard') }}" class="btn btn-sm btn-primary">
             <i class="bi bi-house-door"></i> Dashboard
         </a>
         <form method="POST" action="{{ route('logout') }}">
@@ -103,10 +139,8 @@
         </form>
     </div>
 
-    <!-- Sidebar Toggle -->
     <button class="toggle-btn mb-3" id="toggle-btn"><i class="bi bi-list"></i></button>
 
-    <!-- Flash messages -->
     @if(session('success'))
         <div class="alert alert-success">{{ session('success') }}</div>
     @endif

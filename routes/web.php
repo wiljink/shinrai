@@ -1,115 +1,135 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\PropertyController;
-use App\Http\Controllers\SaleController;
-use App\Http\Controllers\CollectionController;
-use App\Http\Controllers\CommissionController;
-use App\Http\Controllers\IncentiveController;
-use App\Http\Controllers\AccountController;
-use App\Http\Controllers\BranchController;
-use App\Http\Controllers\LedgerController;
-use App\Http\Controllers\ProjectController;
-use App\Http\Controllers\ExpenseController;
-use App\Http\Controllers\ReportController;
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\Auth\AuthenticatedSessionController;
-use App\Http\Controllers\Auth\RegisteredUserController;
-use App\Http\Controllers\AgentController;
+use App\Http\Controllers\{
+    PropertyController,
+    SaleController,
+    CollectionController,
+    CommissionController,
+    IncentiveController,
+    AccountController,
+    BranchController,
+    LedgerController,
+    ProjectController,
+    ExpenseController,
+    ReportController,
+    DashboardController,
+    AgentController,
+    UserController
+};
+use App\Http\Controllers\Auth\{
+    AuthenticatedSessionController,
+    RegisteredUserController
+};
 
-// ================================
-// Public / Landing Page
-// ================================
+/*
+|--------------------------------------------------------------------------
+| Public Landing Page
+|--------------------------------------------------------------------------
+*/
 Route::get('/', function () {
     if (auth()->check()) {
         return auth()->user()->role === 'admin'
             ? redirect()->route('admin.dashboard')
             : redirect()->route('agent.dashboard');
     }
-    return view('welcome'); // 👈 Show the new welcome.blade.php
+    return view('welcome');
 })->name('welcome');
 
-
-// ================================
-// Guest Routes (Unauthenticated Users)
-// ================================
+/*
+|--------------------------------------------------------------------------
+| Guest Routes
+|--------------------------------------------------------------------------
+*/
 Route::middleware('guest')->group(function () {
-    // Login
     Route::get('/login', [AuthenticatedSessionController::class, 'create'])->name('login');
     Route::post('/login', [AuthenticatedSessionController::class, 'store']);
-
-    // Registration (Fixed ✅)
     Route::get('/register', [RegisteredUserController::class, 'create'])->name('register');
     Route::post('/register', [RegisteredUserController::class, 'store']);
 });
 
-
-// ================================
-// Logout (accessible to authenticated users)
-// ================================
+/*
+|--------------------------------------------------------------------------
+| Logout
+|--------------------------------------------------------------------------
+*/
 Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
 
+/*
+|--------------------------------------------------------------------------
+| Admin Only Routes
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth', 'role:admin'])
+    ->prefix('admin')
+    ->name('admin.')
+    ->group(function () {
 
-// ================================
-// Protected Routes (Authenticated Users Only)
-// ================================
-Route::middleware(['auth'])->group(function () {
+        // Dashboard
+        Route::get('/dashboard', [DashboardController::class, 'admin'])->name('dashboard');
 
-    // Branches
-    Route::resource('branches', BranchController::class);
+        // User Management
+        Route::get('/users', [UserController::class, 'index'])->name('users.index');
+        Route::get('/users/create', [UserController::class, 'create'])->name('users.create');
+        Route::post('/users', [UserController::class, 'store'])->name('users.store');
+        Route::get('/users/{id}/edit', [UserController::class, 'edit'])->name('users.edit');
+        Route::put('/users/{id}', [UserController::class, 'update'])->name('users.update');
+        Route::delete('/users/{id}', [UserController::class, 'destroy'])->name('users.destroy');
 
-    // Properties
-    Route::resource('properties', PropertyController::class);
+        Route::post('/users/{id}/approve', [UserController::class, 'approve'])->name('users.approve');
+        Route::post('/users/{id}/deactivate', [UserController::class, 'deactivate'])->name('users.deactivate');
 
-    // Projects
-    Route::resource('projects', ProjectController::class);
+        // ✅ Commissions (Admin Only)
+        Route::resource('commissions', CommissionController::class);
+    });
 
-    // Sales
-    Route::resource('sales', SaleController::class);
 
-    // Collections
-    Route::resource('collections', CollectionController::class);
+/*
+|--------------------------------------------------------------------------
+| Agent Only Routes
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth', 'role:agent'])->group(function () {
 
-    // Commissions
-    Route::resource('commissions', CommissionController::class);
-
-    // Incentives
-    Route::resource('incentives', IncentiveController::class);
-
-    // Accounts & Ledgers
-    Route::resource('accounts', AccountController::class);
-    Route::resource('ledgers', LedgerController::class);
-
-    // Expenses
-    Route::resource('expenses', ExpenseController::class);
-
-    // Reports
-    Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
-    Route::post('reports/generate', [ReportController::class, 'generate'])->name('reports.generate');
-    Route::get('reports/profit-loss', [ReportController::class, 'profitLoss'])->name('reports.profitLoss');
-    Route::get('reports/sales', [ReportController::class, 'salesReport'])->name('reports.sales');
-    Route::get('reports/receivables', [ReportController::class, 'receivableReport'])->name('reports.receivables');
-    Route::get('reports/commissions', [ReportController::class, 'commissionReport'])->name('reports.commissions');
-    Route::get('reports/expenses', [ReportController::class, 'expenseReport'])->name('reports.expenses');
-    Route::get('reports/incentives', [ReportController::class, 'incentivesReport'])->name('reports.incentives');
-
-    // Dashboards
-    Route::get('/admin/dashboard', [DashboardController::class, 'admin'])->name('admin.dashboard');
     Route::get('/agent/dashboard', [DashboardController::class, 'agent'])->name('agent.dashboard');
 
+});
 
-    // ✅ Admin: View all agents
-    Route::get('/admin/agents', [AgentController::class, 'index'])->name('admin.agents.index');
+/*
+|--------------------------------------------------------------------------
+| Shared Resources (Admin + Agent)
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth'])->group(function () {
 
-    // ✅ Admin: Approve a specific agent
-    Route::post('/admin/agents/{id}/approve', [AgentController::class, 'approve'])->name('agents.approve');
-    Route::post('/admin/agents/{id}/reject', [AgentController::class, 'reject'])->name('agents.reject');
-    // Fallback for undefined routes
-    Route::fallback(function () {
-        return redirect()->route('login');
+    Route::resources([
+        'properties' => PropertyController::class,
+        'sales' => SaleController::class,
+        'collections' => CollectionController::class,
+        'commissions' => CommissionController::class,
+        'incentives' => IncentiveController::class,
+        'ledgers' => LedgerController::class,
+        'expenses' => ExpenseController::class,
+        'projects' => ProjectController::class,
+        'branches' => BranchController::class,
+        'accounts' => AccountController::class,
+    ]);
+
+    Route::prefix('reports')->name('reports.')->group(function () {
+        Route::get('/profit-loss', [ReportController::class, 'profitLoss'])->name('profitLoss');
+        Route::get('/sales', [ReportController::class, 'salesReport'])->name('sales');
+        Route::get('/receivables', [ReportController::class, 'receivableReport'])->name('receivables');
+        Route::get('/commissions', [ReportController::class, 'commissionReport'])->name('commissions');
+        Route::get('/expenses', [ReportController::class, 'expenseReport'])->name('expenses');
+        Route::get('/incentives', [ReportController::class, 'incentivesReport'])->name('incentives');
     });
 });
 
+/*
+|--------------------------------------------------------------------------
+| Fallback
+|--------------------------------------------------------------------------
+*/
+Route::fallback(fn () => redirect()->route('login'));
 
-// ✅ Always include this at the bottom
 require __DIR__ . '/auth.php';

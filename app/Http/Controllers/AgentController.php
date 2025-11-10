@@ -53,7 +53,7 @@ class AgentController extends Controller
         }
 
         $agent = User::findOrFail($id);
-        $agent->is_approved = 0;
+        $agent->is_approved = 2;
         $agent->save();
 
         return redirect()->route('admin.agents.index')

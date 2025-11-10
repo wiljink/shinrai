@@ -6,6 +6,7 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Hash;
 
 class User extends Authenticatable
 {
@@ -19,6 +20,9 @@ class User extends Authenticatable
         'role',
         'is_approved',
         'branch_id',
+        'birthday',
+        'gender',
+        'is_approved',
     ];
 
     protected $hidden = [
@@ -31,6 +35,15 @@ class User extends Authenticatable
         'is_approved' => 'boolean',
     ];
 
+    // Automatically hash password when setting
+    public function setPasswordAttribute($value)
+    {
+        if (!empty($value)) {
+            $this->attributes['password'] = Hash::make($value);
+        }
+    }
+
+    // Relationships
     public function branch()
     {
         return $this->belongsTo(Branch::class);
@@ -44,6 +57,11 @@ class User extends Authenticatable
     public function sales()
     {
         return $this->hasMany(Sale::class, 'agent_id');
+    }
+
+    public function collections()
+    {
+        return $this->hasMany(Collection::class, 'agent_id');
     }
 
     public function commissions()
