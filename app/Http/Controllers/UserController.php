@@ -73,46 +73,60 @@ class UserController extends Controller
     /**
      * Show the form for editing the specified user.
      */
-    public function edit(User $user)
-    {
-        $branches = Branch::all();
-        $roles = $this->roles;
-        return view('admin.users.edit', compact('user', 'roles', 'branches'));
-    }
+  public function edit($id)
+{
+    // Fetch the user by ID
+    $user = User::findOrFail($id);
+
+    // Get all branches for the dropdown
+    $branches = Branch::all();
+
+    // Get roles array
+    $roles = $this->roles;
+
+    // Pass all variables to the view
+    return view('admin.users.edit', compact('user', 'roles', 'branches'));
+}
+
 
     /**
      * Update the specified user in storage.
      */
-    public function update(Request $request, User $user)
-    {
-        $validated = $request->validate([
-            'first_name' => 'required|string|max:255',
-            'last_name'  => 'required|string|max:255',
-            'email'      => 'required|email|unique:users,email,' . $user->id,
-            'role'       => 'required|string|in:' . implode(',', $this->roles),
-            'branch_id'  => 'nullable|exists:branches,id',
-            'birthday'   => 'nullable|date',
-            'gender'     => 'nullable|in:male,female',
-            'password'   => 'nullable|string|min:6',
-        ]);
+  public function update(Request $request, User $user)
+{
+    // Validate input
+    $validated = $request->validate([
+        'first_name' => 'required|string|max:255',
+        'last_name'  => 'required|string|max:255',
+        'email'      => 'required|email|unique:users,email,' . $user->id,
+        'role'       => 'required|string|in:' . implode(',', array_keys($this->roles)),
+        'branch_id'  => 'nullable|exists:branches,id',
+        'birthday'   => 'nullable|date',
+        'gender'     => 'nullable|in:male,female',
+        'password'   => 'nullable|string|min:6',
+    ]);
 
-        $user->first_name = $validated['first_name'];
-        $user->last_name  = $validated['last_name'];
-        $user->email      = $validated['email'];
-        $user->role       = $validated['role'];
-        $user->branch_id  = $validated['branch_id'] ?? null;
-        $user->birthday   = $validated['birthday'] ?? null;
-        $user->gender     = $validated['gender'] ?? null;
+    // Prepare data for update
+    $data = [
+        'first_name' => $validated['first_name'],
+        'last_name'  => $validated['last_name'],
+        'email'      => $validated['email'],
+        'role'       => $validated['role'],
+        'branch_id'  => $validated['branch_id'] ?? null,
+        'birthday'   => $validated['birthday'] ?? null,
+        'gender'     => $validated['gender'] ?? null,
+    ];
 
-        // Update password only if provided
-        if (!empty($validated['password'])) {
-            $user->password = Hash::make($validated['password']);
-        }
-
-        $user->save();
-
-        return redirect()->route('admin.users.index')->with('success', 'User updated successfully.');
+    // Only hash and update password if provided
+    if (!empty($validated['password'])) {
+        $data['password'] = Hash::make($validated['password']);
     }
+
+    // Update the user
+    $user->update($data);
+
+    return redirect()->route('admin.users.index')->with('success', 'User updated successfully.');
+}
 
     /**
      * Remove the specified user from storage.

@@ -17,7 +17,7 @@
         <tr>
             <td>{{ $user->first_name }} {{ $user->last_name }}</td>
             <td>{{ $user->email }}</td>
-            <td>{{ ucfirst($user->role) }}</td>
+            <td>{{ $roles[$user->role] ?? ucfirst(str_replace('_', ' ', $user->role)) }}</td>
             <td>{{ $user->branch->name ?? 'N/A' }}</td>
 
             <td>

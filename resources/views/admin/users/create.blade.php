@@ -34,17 +34,17 @@
             <input type="password" name="password" class="form-control">
         </div>
 
-        <div class="mb-3">
-            <label>User Role</label>
-            <select name="role" class="form-control">
-               @foreach($roles as $value => $label)
-<option value="{{ $value }}" {{ old('role') == $value ? 'selected' : '' }}>
-    {{ $label }}
-</option>
-@endforeach
+      <div class="mb-3">
+    <label>User Role</label>
+    <select name="role" class="form-control">
+        @foreach($roles as $value => $label)
+            <option value="{{ $value }}" {{ old('role', $user->role ?? '') == $value ? 'selected' : '' }}>
+                {{ $label }}
+            </option>
+        @endforeach
+    </select>
+</div>
 
-            </select>
-        </div>
 
         <div class="mb-3">
             <label>Branch (Optional)</label>
