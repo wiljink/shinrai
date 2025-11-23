@@ -7,14 +7,12 @@ use App\Http\Controllers\{
     CollectionController,
     CommissionController,
     IncentiveController,
-    AccountController,
-    BranchController,
     LedgerController,
-    ProjectController,
     ExpenseController,
+    ProjectController,
+    BranchController,
     ReportController,
     DashboardController,
-    AgentController,
     UserController
 };
 use App\Http\Controllers\Auth\{
@@ -29,9 +27,13 @@ use App\Http\Controllers\Auth\{
 */
 Route::get('/', function () {
     if (auth()->check()) {
-        return auth()->user()->role === 'admin'
-            ? redirect()->route('admin.dashboard')
-            : redirect()->route('agent.dashboard');
+        $role = auth()->user()->role;
+        return match($role) {
+            'admin' => redirect()->route('admin.dashboard'),
+            'sales_manager' => redirect()->route('sales_manager.dashboard'),
+            'sales_agent' => redirect()->route('sales_agent.dashboard'),
+            default => redirect()->route('login')
+        };
     }
     return view('welcome');
 })->name('welcome');
@@ -57,77 +59,70 @@ Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->name
 
 /*
 |--------------------------------------------------------------------------
-| Admin Only Routes
+| Admin Routes
 |--------------------------------------------------------------------------
 */
-Route::middleware(['auth', 'role:admin'])
-    ->prefix('admin')
-    ->name('admin.')
-    ->group(function () {
+Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'admin'])->name('dashboard');
 
-        // Dashboard
-        Route::get('/dashboard', [DashboardController::class, 'admin'])->name('dashboard');
+    // Resources
+    Route::resource('properties', PropertyController::class);
+    Route::resource('sales', SaleController::class);
+    Route::resource('collections', CollectionController::class);
+    Route::resource('commissions', CommissionController::class);
+    Route::resource('incentives', IncentiveController::class);
+    Route::resource('expenses', ExpenseController::class);
+    Route::resource('projects', ProjectController::class);
+    Route::resource('branches', BranchController::class);
+    Route::resource('users', UserController::class);
 
-        // User Management
-        Route::get('/users', [UserController::class, 'index'])->name('users.index');
-        Route::get('/users/create', [UserController::class, 'create'])->name('users.create');
-        Route::post('/users', [UserController::class, 'store'])->name('users.store');
-        Route::get('/users/{id}/edit', [UserController::class, 'edit'])->name('users.edit');
-        Route::put('/users/{id}', [UserController::class, 'update'])->name('users.update');
-        Route::delete('/users/{id}', [UserController::class, 'destroy'])->name('users.destroy');
+    // Ledgers
+    Route::get('ledgers', [LedgerController::class, 'index'])->name('ledgers.index');
 
-        Route::post('/users/{id}/approve', [UserController::class, 'approve'])->name('users.approve');
-        Route::post('/users/{id}/deactivate', [UserController::class, 'deactivate'])->name('users.deactivate');
-
-        // ✅ Commissions (Admin Only)
-        Route::resource('commissions', CommissionController::class);
-    });
-
-
-/*
-|--------------------------------------------------------------------------
-| Agent Only Routes
-|--------------------------------------------------------------------------
-*/
-Route::middleware(['auth', 'role:agent'])->group(function () {
-
-    Route::get('/agent/dashboard', [DashboardController::class, 'agent'])->name('agent.dashboard');
-
-});
-
-/*
-|--------------------------------------------------------------------------
-| Shared Resources (Admin + Agent)
-|--------------------------------------------------------------------------
-*/
-Route::middleware(['auth'])->group(function () {
-
-    Route::resources([
-        'properties' => PropertyController::class,
-        'sales' => SaleController::class,
-        'collections' => CollectionController::class,
-        'commissions' => CommissionController::class,
-        'incentives' => IncentiveController::class,
-        'ledgers' => LedgerController::class,
-        'expenses' => ExpenseController::class,
-        'projects' => ProjectController::class,
-        'branches' => BranchController::class,
-        'accounts' => AccountController::class,
-    ]);
-
+    // Reports
     Route::prefix('reports')->name('reports.')->group(function () {
-        Route::get('/profit-loss', [ReportController::class, 'profitLoss'])->name('profitLoss');
-        Route::get('/sales', [ReportController::class, 'salesReport'])->name('sales');
-        Route::get('/receivables', [ReportController::class, 'receivableReport'])->name('receivables');
-        Route::get('/commissions', [ReportController::class, 'commissionReport'])->name('commissions');
-        Route::get('/expenses', [ReportController::class, 'expenseReport'])->name('expenses');
-        Route::get('/incentives', [ReportController::class, 'incentivesReport'])->name('incentives');
+        Route::get('profit-loss', [ReportController::class, 'profitLoss'])->name('profitLoss');
+        Route::get('sales', [ReportController::class, 'sales'])->name('sales');
+        Route::get('receivables', [ReportController::class, 'receivables'])->name('receivables');
+        Route::get('commissions', [ReportController::class, 'commissions'])->name('commissions');
+        Route::get('expenses', [ReportController::class, 'expenses'])->name('expenses');
+        Route::get('incentives', [ReportController::class, 'incentives'])->name('incentives');
     });
 });
 
 /*
 |--------------------------------------------------------------------------
-| Fallback
+| Sales Manager Routes
+|--------------------------------------------------------------------------
+*/
+Route::prefix('sales-manager')->name('sales_manager.')->middleware(['auth', 'role:sales_manager'])->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'salesManager'])->name('dashboard');
+
+    Route::resource('properties', PropertyController::class);
+    Route::resource('sales', SaleController::class);
+    Route::resource('collections', CollectionController::class);
+    Route::resource('commissions', CommissionController::class);
+    Route::resource('incentives', IncentiveController::class);
+});
+
+/*
+|--------------------------------------------------------------------------
+| Sales Agent Routes
+|--------------------------------------------------------------------------
+*/
+Route::prefix('sales-agent')->name('sales_agent.')->middleware(['auth', 'role:sales_agent'])->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'salesAgent'])->name('dashboard');
+
+    Route::resource('properties', PropertyController::class)->only(['index', 'show']);
+    Route::resource('sales', SaleController::class)->only(['index', 'show']);
+    Route::resource('collections', CollectionController::class)->only(['index', 'show']);
+    Route::resource('commissions', CommissionController::class)->only(['index', 'show']);
+    Route::resource('incentives', IncentiveController::class)->only(['index', 'show']);
+});
+
+/*
+|--------------------------------------------------------------------------
+| Fallback Route
 |--------------------------------------------------------------------------
 */
 Route::fallback(fn () => redirect()->route('login'));

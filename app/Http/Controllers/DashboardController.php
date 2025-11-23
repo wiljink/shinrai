@@ -18,18 +18,12 @@ class DashboardController extends Controller
     // Admin Dashboard
     public function admin()
     {
-        // Only admin can access
         if (!auth()->check() || auth()->user()->role !== 'admin') {
             abort(403, 'Unauthorized.');
         }
 
-        // Combine agents + brokers
-        $totalRegistrations = User::whereIn('role', ['agent', 'broker'])->count();
-
-        // Count buyers separately
+        $totalRegistrations = User::whereIn('role', ['sales_manager', 'sales_agent'])->count();
         $totalBuyers = User::where('role', 'buyer')->count();
-
-        // Other stats
         $totalProperties = Property::count();
         $totalSales = Sale::count();
         $totalCollections = Collection::sum('amount');
@@ -47,32 +41,46 @@ class DashboardController extends Controller
         ));
     }
 
-
-    public function agent()
+    // Sales Manager Dashboard
+    public function salesManager()
     {
-        if (!auth()->check() || auth()->user()->role !== 'agent') {
+        if (!auth()->check() || auth()->user()->role !== 'sales_manager') {
             abort(403, 'Unauthorized.');
         }
 
         $user = auth()->user();
 
-        // Count distinct buyers from sales
-        $totalBuyers = Sale::where('agent_id', $user->id)
-            ->distinct('buyer_name')
-            ->count('buyer_name');
+        // Example stats for testing
+        $totalSales = Sale::where('manager_id', $user->id)->count(); // assumes you have manager_id in sales
+        $totalCollections = Collection::where('manager_id', $user->id)->sum('amount');
+        $totalProperties = Property::where('manager_id', $user->id)->count();
 
-        $totalProperties = Property::where('agent_id', $user->id)->count();
-        $totalSales = Sale::where('agent_id', $user->id)->count();
-        $totalCollections = Collection::where('agent_id', $user->id)->sum('amount');
-        $totalIncentives = Incentive::where('agent_id', $user->id)->sum('amount');
-
-        return view('dashboard.agent', compact(
-            'totalBuyers',
-            'totalProperties',
+        return view('dashboards.sales_manager', compact(
             'totalSales',
             'totalCollections',
-            'totalIncentives'
+            'totalProperties'
         ));
     }
 
+    // Sales Agent Dashboard
+    public function salesAgent()
+    {
+        if (!auth()->check() || auth()->user()->role !== 'sales_agent') {
+            abort(403, 'Unauthorized.');
+        }
+
+        $user = auth()->user();
+
+        $assignedSales = Sale::where('agent_id', $user->id)->count();
+        $assignedProperties = Property::where('agent_id', $user->id)->count();
+        $assignedCollections = Collection::where('agent_id', $user->id)->sum('amount');
+        $assignedIncentives = Incentive::where('agent_id', $user->id)->sum('amount');
+
+        return view('dashboards.sales_agent', compact(
+            'assignedSales',
+            'assignedProperties',
+            'assignedCollections',
+            'assignedIncentives'
+        ));
+    }
 }

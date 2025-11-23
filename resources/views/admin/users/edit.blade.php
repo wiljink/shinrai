@@ -6,9 +6,7 @@
 
     <!-- Success message -->
     @if(session('success'))
-        <div class="alert alert-success">
-            {{ session('success') }}
-        </div>
+        <div class="alert alert-success">{{ session('success') }}</div>
     @endif
 
     <form method="POST" action="{{ route('admin.users.update', $user->id) }}">
@@ -17,17 +15,17 @@
 
         <div class="mb-3">
             <label>First Name</label>
-            <input type="text" value="{{ old('first_name', $user->first_name) }}" name="first_name" class="form-control">
+            <input type="text" name="first_name" value="{{ old('first_name', $user->first_name) }}" class="form-control">
         </div>
 
         <div class="mb-3">
             <label>Last Name</label>
-            <input type="text" value="{{ old('last_name', $user->last_name) }}" name="last_name" class="form-control">
+            <input type="text" name="last_name" value="{{ old('last_name', $user->last_name) }}" class="form-control">
         </div>
 
         <div class="mb-3">
             <label>Email</label>
-            <input type="email" value="{{ old('email', $user->email) }}" name="email" class="form-control">
+            <input type="email" name="email" value="{{ old('email', $user->email) }}" class="form-control">
         </div>
 
         <div class="mb-3">
@@ -55,6 +53,28 @@
                         {{ $branch->name }}
                     </option>
                 @endforeach
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label>Birthday</label>
+            <input type="date" name="birthday" value="{{ old('birthday', $user->birthday) }}" class="form-control">
+        </div>
+
+        <div class="mb-3">
+            <label>Gender</label>
+            <select name="gender" class="form-control">
+                <option value="">Select Gender</option>
+                <option value="male" {{ old('gender', $user->gender) === 'male' ? 'selected' : '' }}>Male</option>
+                <option value="female" {{ old('gender', $user->gender) === 'female' ? 'selected' : '' }}>Female</option>
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label>Status</label>
+            <select name="is_approved" class="form-control">
+                <option value="0" {{ old('is_approved', $user->is_approved) == 0 ? 'selected' : '' }}>Pending</option>
+                <option value="1" {{ old('is_approved', $user->is_approved) == 1 ? 'selected' : '' }}>Approved</option>
             </select>
         </div>
 

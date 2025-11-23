@@ -2,10 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Facades\Hash;
 
 class User extends Authenticatable
@@ -22,7 +21,10 @@ class User extends Authenticatable
         'branch_id',
         'birthday',
         'gender',
-        'is_approved',
+        // 🔑 NEW: For commission calculation (60%/70%/80%/90%)
+        'commission_rate', 
+        // 🔑 NEW: For Sales Manager/Director Override hierarchy
+        'manager_id',
     ];
 
     protected $hidden = [
@@ -33,17 +35,22 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'is_approved' => 'boolean',
+        // Casting commission_rate as float ensures it's treated as a number
+        'commission_rate' => 'float', 
     ];
 
-    // Automatically hash password when setting
+    // ✅ Safe password mutator (from your original file)
     public function setPasswordAttribute($value)
     {
         if (!empty($value)) {
-            $this->attributes['password'] = Hash::make($value);
+            if (!str_starts_with($value, '$2y$')) {
+                $value = Hash::make($value);
+            }
+            $this->attributes['password'] = $value;
         }
     }
 
-    // Relationships
+    // --- Relationships (Existing) ---
     public function branch()
     {
         return $this->belongsTo(Branch::class);
@@ -82,5 +89,23 @@ class User extends Authenticatable
     public function reports()
     {
         return $this->hasMany(Report::class, 'generated_by');
+    }
+    
+    // --- Relationships (New for Hierarchy) ---
+    
+    /**
+     * An agent reports to a manager, who is another User.
+     */
+    public function manager()
+    {
+        return $this->belongsTo(User::class, 'manager_id');
+    }
+
+    /**
+     * A manager/director has many reports (agents) under them.
+     */
+    public function reportsTo()
+    {
+        return $this->hasMany(User::class, 'manager_id');
     }
 }

@@ -92,9 +92,10 @@ class UserController extends Controller
     /**
      * Update the specified user in storage.
      */
-  public function update(Request $request, User $user)
+  public function update(Request $request, $id)
 {
-    // Validate input
+    $user = User::findOrFail($id); // fetch user manually
+
     $validated = $request->validate([
         'first_name' => 'required|string|max:255',
         'last_name'  => 'required|string|max:255',
@@ -106,7 +107,6 @@ class UserController extends Controller
         'password'   => 'nullable|string|min:6',
     ]);
 
-    // Prepare data for update
     $data = [
         'first_name' => $validated['first_name'],
         'last_name'  => $validated['last_name'],
@@ -117,12 +117,10 @@ class UserController extends Controller
         'gender'     => $validated['gender'] ?? null,
     ];
 
-    // Only hash and update password if provided
     if (!empty($validated['password'])) {
         $data['password'] = Hash::make($validated['password']);
     }
 
-    // Update the user
     $user->update($data);
 
     return redirect()->route('admin.users.index')->with('success', 'User updated successfully.');

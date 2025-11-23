@@ -9,6 +9,15 @@ use Illuminate\Http\Request;
 
 class PropertyController extends Controller
 {
+    private function redirectToProperties()
+    {
+        $role = auth()->user()->role;
+
+        return $role === 'sales_manager'
+            ? redirect()->route('sales_manager.properties.index')
+            : redirect()->route('sales_agent.properties.index');
+    }
+
     public function index()
     {
         $properties = Property::with(['project', 'agent', 'images'])->paginate(10);
@@ -18,7 +27,8 @@ class PropertyController extends Controller
     public function create()
     {
         $projects = Project::all();
-        $agents = User::where('role', 'agent')->get();
+        $agents = User::where('role', 'sales_agent')->get();
+
         return view('properties.create', compact('projects', 'agents'));
     }
 
@@ -35,7 +45,8 @@ class PropertyController extends Controller
 
         Property::create($validated);
 
-        return redirect()->route('properties.index')->with('success', 'Property added successfully!');
+        return $this->redirectToProperties()
+            ->with('success', 'Property added successfully!');
     }
 
     public function show(Property $property)
@@ -46,7 +57,8 @@ class PropertyController extends Controller
     public function edit(Property $property)
     {
         $projects = Project::all();
-        $agents = User::where('role', 'agent')->get();
+        $agents = User::where('role', 'sales_agent')->get();
+
         return view('properties.edit', compact('property', 'projects', 'agents'));
     }
 
@@ -63,12 +75,15 @@ class PropertyController extends Controller
 
         $property->update($validated);
 
-        return redirect()->route('properties.index')->with('success', 'Property updated successfully!');
+        return $this->redirectToProperties()
+            ->with('success', 'Property updated successfully!');
     }
 
     public function destroy(Property $property)
     {
         $property->delete();
-        return redirect()->route('properties.index')->with('success', 'Property deleted!');
+
+        return $this->redirectToProperties()
+            ->with('success', 'Property deleted!');
     }
 }

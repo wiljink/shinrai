@@ -21,31 +21,31 @@ class ReportController extends Controller
         return view('reports.profit_loss', compact('totalSales', 'totalCollections', 'totalExpenses', 'netProfit'));
     }
 
-    public function salesReport()
+    public function sales()
     {
         $sales = Sale::with(['property', 'agent'])->get();
         return view('reports.sales', compact('sales'));
     }
 
-    public function receivableReport()
+    public function receivables()
     {
         $sales = Sale::with('collections')->get();
         return view('reports.receivables', compact('sales'));
     }
 
-    public function commissionReport()
+    public function commissions()
     {
         $commissions = Commission::with(['sale', 'agent'])->get();
         return view('reports.commissions', compact('commissions'));
     }
 
-    public function expenseReport()
+    public function expenses()
     {
         $expenses = Expense::all();
         return view('reports.expenses', compact('expenses'));
     }
 
-    public function incentiveReport()
+    public function incentives()
     {
         $incentives = Incentive::with('agent')->get();
         return view('reports.incentives', compact('incentives'));

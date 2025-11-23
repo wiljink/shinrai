@@ -6,6 +6,7 @@ use App\Models\Sale;
 use App\Models\Property;
 use App\Models\User;
 use Illuminate\Http\Request;
+use App\Services\CommissionService;
 
 class SaleController extends Controller
 {
@@ -22,20 +23,27 @@ class SaleController extends Controller
         return view('sales.create', compact('properties', 'agents'));
     }
 
-    public function store(Request $request)
+  public function store(Request $request)
     {
         $validated = $request->validate([
             'property_id' => 'required',
             'agent_id' => 'required',
             'buyer_name' => 'required',
             'sale_date' => 'required|date',
-            'amount' => 'required|numeric',
+            // CRITICAL: The amount must be the total sale amount for the calculation to work.
+            'amount' => 'required|numeric', 
             'status' => 'required',
         ]);
 
-        Sale::create($validated);
+        // 1. Record the sale
+        $sale = Sale::create($validated);
 
-        return redirect()->route('sales.index')->with('success', 'Sale recorded successfully!');
+        // 2. Immediately trigger commission calculation and recording (New Logic)
+        $commissionService = new CommissionService();
+        $results = $commissionService->processSaleCommissions($sale);
+
+        return redirect()->route('sales.index')
+            ->with('success', 'Sale recorded and commissions calculated successfully! Agent Share: ' . number_format($results['agent_commission'], 2));
     }
 
     public function show(Sale $sale)

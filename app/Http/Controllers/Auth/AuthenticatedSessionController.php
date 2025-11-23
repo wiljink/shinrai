@@ -22,6 +22,7 @@ class AuthenticatedSessionController extends Controller
      */
     public function store(Request $request)
     {
+        // Validate login credentials
         $credentials = $request->validate([
             'email' => ['required', 'email'],
             'password' => ['required'],
@@ -29,23 +30,23 @@ class AuthenticatedSessionController extends Controller
 
         $user = \App\Models\User::where('email', $credentials['email'])->first();
 
-        // Check if user exists and not approved
+        // Check if user exists and is not approved
         if ($user && !$user->is_approved) {
             return back()->withErrors(['email' => 'Your account is pending admin approval.']);
         }
 
-        // Attempt to log in
+        // Attempt login
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
-            $request->session()->regenerate();
-
+            $request->session()->regenerate(); // regenerate session to prevent fixation
             $user = Auth::user();
 
-            // ✅ Redirect based on 'role'
-            if ($user->role === 'admin') {
-                return redirect()->route('admin.dashboard');
-            } else {
-                return redirect()->route('agent.dashboard');
-            }
+            // Redirect based on role
+            return match($user->role) {
+                'admin' => redirect()->route('admin.dashboard'),
+                'sales_manager' => redirect()->route('sales_manager.dashboard'),
+                'sales_agent' => redirect()->route('sales_agent.dashboard'),
+                default => redirect()->route('login'),
+            };
         }
 
         return back()->withErrors([
@@ -60,8 +61,8 @@ class AuthenticatedSessionController extends Controller
     {
         Auth::guard('web')->logout();
 
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
+        $request->session()->invalidate();        // invalidate session
+        $request->session()->regenerateToken();   // regenerate CSRF token
 
         return redirect('/');
     }
