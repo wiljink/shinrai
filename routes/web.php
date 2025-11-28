@@ -141,7 +141,7 @@ Route::prefix('sales-manager')->name('sales_manager.')->middleware(['auth', 'rol
 Route::prefix('sales-agent')->name('sales_agent.')->middleware(['auth', 'role:sales_agent'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'salesAgent'])->name('dashboard');
 
-    Route::resource('properties', PropertyController::class)->only(['index', 'show']);
+    Route::resource('properties', PropertyController::class)->only(['index', 'show','create', 'store']);
     Route::resource('sales', SaleController::class)->only(['index', 'show']);
     Route::resource('collections', CollectionController::class)->only(['index', 'show']);
     Route::resource('commissions', CommissionController::class)->only(['index', 'show']);
