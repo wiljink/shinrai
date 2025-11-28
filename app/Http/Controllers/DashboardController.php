@@ -30,7 +30,7 @@ class DashboardController extends Controller
         $totalExpenses = Expense::sum('amount');
         $totalIncentives = Incentive::sum('amount');
 
-        return view('dashboard.admin', compact(
+        return view('dashboards.admin', compact(
             'totalRegistrations',
             'totalBuyers',
             'totalProperties',

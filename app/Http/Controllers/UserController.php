@@ -9,151 +9,179 @@ use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
-    // Define roles in one place for consistency
     protected $roles = [
-    'admin' => 'Admin',
-    'sales_agent' => 'Sales Agent',
-    'sales_manager' => 'Sales Manager',
-];
+        'admin'                 => 'Sales Director',
+        'sales_manager'         => 'Sales Manager',
+        'senior_sales_affiliate'=> 'Senior Sales & Mktg Affiliate',
+        'junior_sales_affiliate'=> 'Junior Sales & Mktg Affiliate',
+    ];
 
-    /**
-     * Display a listing of the users.
-     */
+    /** Display a listing of users */
     public function index()
     {
-        $users = User::with('branch')->paginate(10);
+        if (auth()->user()->role === 'sales_manager') {
+            // Only users under this manager
+            $users = User::where('manager_id', auth()->id())->paginate(10);
+            return view('sales_manager.users.index', compact('users'));
+        }
+
+        // Admin sees all users
+        $users = User::with(['branch', 'manager'])->paginate(10);
         return view('admin.users.index', compact('users'));
     }
 
-    /**
-     * Show the form for creating a new user.
-     */
+    /** Show the form for creating a new user */
     public function create()
     {
         $branches = Branch::all();
         $roles = $this->roles;
-        return view('admin.users.create', compact('roles', 'branches'));
+
+        if (auth()->user()->role === 'sales_manager') {
+            return view('sales_manager.users.create', compact('roles', 'branches'));
+        }
+
+        // Admin also selects manager
+        $managers = User::where('role', 'sales_manager')->get();
+        return view('admin.users.create', compact('roles', 'branches', 'managers'));
     }
 
-    /**
-     * Store a newly created user in storage.
-     */
-    public function store(Request $request)
+  /** Store a newly created user */
+public function store(Request $request)
 {
-    $validated = $request->validate([
-        'first_name' => 'required|string|max:255',
-        'last_name'  => 'required|string|max:255',
-        'email'      => 'required|email|unique:users,email',
-        'password'   => 'required|string|min:6',
-        'role'       => 'required|string|in:' . implode(',', array_keys($this->roles)),
-        'branch_id'  => 'nullable|exists:branches,id',
-        'birthday'   => 'nullable|date',
-        'gender'     => 'nullable|in:male,female',
-    ]);
+    $isAdmin = auth()->user()->role === 'admin';
 
-    //dd($validated); // now runs correctly when validation passes
-
-    User::create([
-        'first_name'  => $validated['first_name'],
-        'last_name'   => $validated['last_name'],
-        'email'       => $validated['email'],
-        'password'    => Hash::make($validated['password']),
-        'role'        => $validated['role'],
-        'branch_id'   => $validated['branch_id'] ?? null,
-        'birthday'    => $validated['birthday'] ?? null,
-        'gender'      => $validated['gender'] ?? null,
-        'is_approved' => false,
-    ]);
-
-    return redirect()->route('admin.users.index')->with('success', 'User created successfully.');
-}
-
-
-
-    /**
-     * Show the form for editing the specified user.
-     */
-  public function edit($id)
-{
-    // Fetch the user by ID
-    $user = User::findOrFail($id);
-
-    // Get all branches for the dropdown
-    $branches = Branch::all();
-
-    // Get roles array
-    $roles = $this->roles;
-
-    // Pass all variables to the view
-    return view('admin.users.edit', compact('user', 'roles', 'branches'));
-}
-
-
-    /**
-     * Update the specified user in storage.
-     */
-  public function update(Request $request, $id)
-{
-    $user = User::findOrFail($id); // fetch user manually
-
-    $validated = $request->validate([
-        'first_name' => 'required|string|max:255',
-        'last_name'  => 'required|string|max:255',
-        'email'      => 'required|email|unique:users,email,' . $user->id,
-        'role'       => 'required|string|in:' . implode(',', array_keys($this->roles)),
-        'branch_id'  => 'nullable|exists:branches,id',
-        'birthday'   => 'nullable|date',
-        'gender'     => 'nullable|in:male,female',
-        'password'   => 'nullable|string|min:6',
-    ]);
-
-    $data = [
-        'first_name' => $validated['first_name'],
-        'last_name'  => $validated['last_name'],
-        'email'      => $validated['email'],
-        'role'       => $validated['role'],
-        'branch_id'  => $validated['branch_id'] ?? null,
-        'birthday'   => $validated['birthday'] ?? null,
-        'gender'     => $validated['gender'] ?? null,
+    // VALIDATION ----------------------------------
+    $rules = [
+        'first_name'      => 'required|string|max:255',
+        'last_name'       => 'required|string|max:255',
+        'email'           => 'required|email|unique:users,email',
+        'role'            => 'required|string|in:' . implode(',', array_keys($this->roles)),
+        'branch_id'       => 'nullable|exists:branches,id',
+        'birthday'        => 'nullable|date',
+        'gender'          => 'nullable|in:male,female',
+        'manager_id'      => 'nullable|exists:users,id',
+        'commission_rate' => 'nullable|numeric|min:0|max:100',
     ];
 
-    if (!empty($validated['password'])) {
-        $data['password'] = Hash::make($validated['password']);
+    // ADMIN must assign password
+    if ($isAdmin) {
+        $rules['password'] = 'required|string|min:6|confirmed';
     }
 
-    $user->update($data);
+    // SALES MANAGER — no password sent
+    if (!$isAdmin) {
+        $rules['password'] = 'nullable';
+    }
 
-    return redirect()->route('admin.users.index')->with('success', 'User updated successfully.');
+    $validated = $request->validate($rules);
+
+
+    // PASSWORD HANDLING ----------------------------------
+    if ($isAdmin) {
+        // Admin decides password
+        $finalPassword = Hash::make($request->password);
+    } else {
+        // Sales Manager — auto-generate temporary password
+        $temp = 'Temp' . rand(1000, 9999); 
+        $finalPassword = Hash::make($temp);
+    }
+
+
+    // CREATE USER ----------------------------------------
+    User::create([
+        'first_name'      => $validated['first_name'],
+        'last_name'       => $validated['last_name'],
+        'email'           => $validated['email'],
+        'password'        => $finalPassword,
+        'role'            => $validated['role'],
+        'branch_id'       => $validated['branch_id'] ?? null,
+        'birthday'        => $validated['birthday'] ?? null,
+        'gender'          => $validated['gender'] ?? null,
+        'manager_id'      => $validated['manager_id'] ?? null,
+        'commission_rate' => $validated['commission_rate'] ?? 0,
+        'is_approved'     => $isAdmin ? true : false,
+    ]);
+
+
+    // REDIRECT -------------------------------------------
+    if ($isAdmin) {
+        return redirect()
+            ->route('admin.users.index')
+            ->with('success', 'User created successfully.');
+    }
+
+    return redirect()
+        ->route('sales_manager.users.index')
+        ->with('success', 'User created successfully and pending approval.');
 }
 
-    /**
-     * Remove the specified user from storage.
-     */
-   public function destroy($id)
-{
-    $user = User::findOrFail($id); // Fetch the user by ID
-    $user->delete();
-    return back()->with('success', 'User deleted successfully.');
-}
 
-/**
- * Approve a user registration.
- */
-public function approve($id)
-{
-    $user = User::findOrFail($id); // Fetch the user by ID
-    $user->update(['is_approved' => true]);
-    return back()->with('success', 'User approved successfully.');
-}
+    /** Edit user (Admin only) */
+    public function edit($id)
+    {
+        if (auth()->user()->role !== 'admin') abort(403);
 
-/**
- * Deactivate a user.
- */
-public function deactivate($id)
-{
-    $user = User::findOrFail($id); // Fetch the user by ID
-    $user->update(['is_approved' => false]);
-    return back()->with('success', 'User deactivated.');
-}
+        $user = User::findOrFail($id);
+        $branches = Branch::all();
+        $roles = $this->roles;
+        $managers = User::where('role', 'sales_manager')->get();
 
+        return view('admin.users.edit', compact('user', 'roles', 'branches', 'managers'));
+    }
+
+    /** Update user (Admin only) */
+    public function update(Request $request, $id)
+    {
+        if (auth()->user()->role !== 'admin') abort(403);
+
+        $user = User::findOrFail($id);
+
+        $validated = $request->validate([
+            'first_name'      => 'required|string|max:255',
+            'last_name'       => 'required|string|max:255',
+            'email'           => 'required|email|unique:users,email,' . $user->id,
+            'role'            => 'required|string|in:' . implode(',', array_keys($this->roles)),
+            'branch_id'       => 'nullable|exists:branches,id',
+            'birthday'        => 'nullable|date',
+            'gender'          => 'nullable|in:male,female',
+            'manager_id'      => 'nullable|exists:users,id',
+            'commission_rate' => 'nullable|numeric|min:0|max:100',
+            'password'        => 'nullable|string|min:6',
+        ]);
+
+        $data = $validated;
+        if (!empty($validated['password'])) $data['password'] = Hash::make($validated['password']);
+        else unset($data['password']);
+
+        $user->update($data);
+
+        return redirect()->route('admin.users.index')->with('success', 'User updated successfully.');
+    }
+
+    /** Delete user (Admin only) */
+    public function destroy($id)
+    {
+        if (auth()->user()->role !== 'admin') abort(403);
+
+        User::findOrFail($id)->delete();
+        return back()->with('success', 'User deleted successfully.');
+    }
+
+    /** Approve user (Admin only) */
+    public function approve($id)
+    {
+        if (auth()->user()->role !== 'admin') abort(403);
+
+        User::findOrFail($id)->update(['is_approved' => true]);
+        return back()->with('success', 'User approved.');
+    }
+
+    /** Deactivate user (Admin only) */
+    public function deactivate($id)
+    {
+        if (auth()->user()->role !== 'admin') abort(403);
+
+        User::findOrFail($id)->update(['is_approved' => false]);
+        return back()->with('success', 'User deactivated.');
+    }
 }

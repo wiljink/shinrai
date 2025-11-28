@@ -6,6 +6,8 @@
     <title>Shinrai Real Estate System</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
 
     <style>
         body { min-height: 100vh; display: flex; }
@@ -47,12 +49,12 @@
         {{-- Reports --}}
         <div class="border-top mt-3">
             <h6 class="p-3 text-white">Reports</h6>
-            <a href="{{ route('admin.reports.profitLoss') }}"><i class="bi bi-graph-down-arrow"></i> Profit & Loss</a>
-            <a href="{{ route('admin.reports.sales') }}"><i class="bi bi-bar-chart"></i> Sales Report</a>
-            <a href="{{ route('admin.reports.receivables') }}"><i class="bi bi-wallet2"></i> Receivables</a>
-            <a href="{{ route('admin.reports.commissions') }}"><i class="bi bi-cash-coin"></i> Commissions</a>
-            <a href="{{ route('admin.reports.expenses') }}"><i class="bi bi-receipt-cutoff"></i> Expenses</a>
-            <a href="{{ route('admin.reports.incentives') }}"><i class="bi bi-award"></i> Incentives</a>
+            <a href="{{ route('reports.profitLoss') }}"><i class="bi bi-graph-down-arrow"></i> Profit & Loss</a>
+            <a href="{{ route('reports.sales') }}"><i class="bi bi-bar-chart"></i> Sales Report</a>
+            <a href="{{ route('reports.receivables') }}"><i class="bi bi-wallet2"></i> Receivables</a>
+            <a href="{{ route('reports.commissions') }}"><i class="bi bi-cash-coin"></i> Commissions</a>
+            <a href="{{ route('reports.expenses') }}"><i class="bi bi-receipt-cutoff"></i> Expenses</a>
+            <a href="{{ route('reports.incentives') }}"><i class="bi bi-award"></i> Incentives</a>
         </div>
 
         {{-- Settings --}}
@@ -72,6 +74,7 @@
         <a href="{{ route('sales_manager.collections.index') }}"><i class="bi bi-cash-stack"></i> Collections</a>
         <a href="{{ route('sales_manager.commissions.index') }}"><i class="bi bi-cash-coin"></i> Commissions</a>
         <a href="{{ route('sales_manager.incentives.index') }}"><i class="bi bi-gift"></i> Incentives</a>
+        <a href="{{ route('sales_manager.users.index') }}"><i class="fa-solid fa-users"></i> Applicants</a>
     @endif
 
     {{-- SALES AGENT MENU --}}

@@ -2,7 +2,7 @@
 
 @section('content')
     <h1 class="mb-3">Properties</h1>
-    <a href="{{ route('properties.create') }}" class="btn btn-primary mb-3">Add Property</a>
+    <a href="{{ route('admin.properties.create') }}" class="btn btn-primary mb-3">Add Property</a>
 
     <table class="table table-bordered">
         <thead>

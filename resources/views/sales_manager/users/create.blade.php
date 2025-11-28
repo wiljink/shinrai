@@ -8,7 +8,7 @@
 
     <div class="card p-4">
 
-        <form method="POST" action="{{ route('admin.users.store') }}">
+        <form method="POST" action="{{ route('sales_manager.users.store') }}">
             @csrf
 
             @if ($errors->any())
@@ -116,21 +116,8 @@
                 </div>
             </div>
 
-            {{-- ADMIN ONLY: SHOW PASSWORD FIELDS --}}
-            @can('isAdmin')
-            <h5 class="fw-bold mt-4">Account Password</h5>
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label>Password</label>
-                    <input type="password" name="password" class="form-control">
-                </div>
-
-                <div class="col-md-6 mb-3">
-                    <label>Confirm Password</label>
-                    <input type="password" name="password_confirmation" class="form-control">
-                </div>
-            </div>
-            @endcan
+            {{-- hidden fallback password (or you can customize) --}}
+            <input type="hidden" name="password" value="password123">
 
             <button type="submit" class="btn btn-primary mt-3">Submit Application</button>
 

@@ -39,11 +39,13 @@
                 @if(!$user->is_approved)
                     <form action="{{ route('admin.users.approve', $user->id) }}" method="POST" style="display:inline">
                         @csrf
+                        @method('PATCH')
                         <button class="btn btn-sm btn-success">Approve</button>
                     </form>
                 @else
                     <form action="{{ route('admin.users.deactivate', $user->id) }}" method="POST" style="display:inline">
                         @csrf
+                        @method('PATCH')
                         <button class="btn btn-sm btn-secondary">Deactivate</button>
                     </form>
                 @endif

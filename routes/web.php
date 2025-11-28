@@ -75,19 +75,43 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->grou
     Route::resource('projects', ProjectController::class);
     Route::resource('branches', BranchController::class);
     Route::resource('users', UserController::class);
+    // Custom user routes
+    Route::patch('users/{user}/deactivate', [UserController::class, 'deactivate'])->name('users.deactivate');
+
+    // Custom route for approving users
+    Route::patch('users/{user}/approve', [UserController::class, 'approve'])->name('users.approve');
 
     // Ledgers
     Route::get('ledgers', [LedgerController::class, 'index'])->name('ledgers.index');
+});
 
-    // Reports
-    Route::prefix('reports')->name('reports.')->group(function () {
-        Route::get('profit-loss', [ReportController::class, 'profitLoss'])->name('profitLoss');
-        Route::get('sales', [ReportController::class, 'sales'])->name('sales');
-        Route::get('receivables', [ReportController::class, 'receivables'])->name('receivables');
-        Route::get('commissions', [ReportController::class, 'commissions'])->name('commissions');
-        Route::get('expenses', [ReportController::class, 'expenses'])->name('expenses');
-        Route::get('incentives', [ReportController::class, 'incentives'])->name('incentives');
-    });
+/*
+|--------------------------------------------------------------------------
+| SIMPLE REPORT ROUTES (Response 1 Version)
+|--------------------------------------------------------------------------
+| These are outside the admin group so they use:
+| route('reports.profitLoss')
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth'])->group(function () {
+    
+    Route::get('/reports/profit-loss', [ReportController::class, 'profitLoss'])
+        ->name('reports.profitLoss');
+
+    Route::get('/reports/sales', [ReportController::class, 'sales'])
+        ->name('reports.sales');
+
+    Route::get('/reports/receivables', [ReportController::class, 'receivables'])
+        ->name('reports.receivables');
+
+    Route::get('/reports/commissions', [ReportController::class, 'commissions'])
+        ->name('reports.commissions');
+
+    Route::get('/reports/expenses', [ReportController::class, 'expenses'])
+        ->name('reports.expenses');
+
+    Route::get('/reports/incentives', [ReportController::class, 'incentives'])
+        ->name('reports.incentives');
 });
 
 /*
@@ -103,7 +127,11 @@ Route::prefix('sales-manager')->name('sales_manager.')->middleware(['auth', 'rol
     Route::resource('collections', CollectionController::class);
     Route::resource('commissions', CommissionController::class);
     Route::resource('incentives', IncentiveController::class);
+
+    // Users (only index, create, store)
+    Route::resource('users', UserController::class)->only(['index', 'create', 'store']);
 });
+
 
 /*
 |--------------------------------------------------------------------------

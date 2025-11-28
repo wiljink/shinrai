@@ -11,20 +11,25 @@ class User extends Authenticatable
 {
     use HasFactory, Notifiable;
 
-    protected $fillable = [
+   protected $fillable = [
+        'name',
         'first_name',
         'last_name',
+        'middle_initial',
         'email',
         'password',
         'role',
-        'is_approved',
         'branch_id',
         'birthday',
-        'gender',
-        // 🔑 NEW: For commission calculation (60%/70%/80%/90%)
-        'commission_rate', 
-        // 🔑 NEW: For Sales Manager/Director Override hierarchy
-        'manager_id',
+        'address', // ✅ add this
+        'contact_number',
+        'emergency_person',
+        'emergency_contact',
+        'accreditation',
+        'accreditation_number',
+        'project_commission',
+        'brokerage_commission',
+        'is_approved',
     ];
 
     protected $hidden = [
@@ -35,11 +40,12 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'is_approved' => 'boolean',
-        // Casting commission_rate as float ensures it's treated as a number
-        'commission_rate' => 'float', 
+        'commission_rate' => 'float',
     ];
 
-    // ✅ Safe password mutator (from your original file)
+    /**
+     * Automatically hash password unless it is already hashed.
+     */
     public function setPasswordAttribute($value)
     {
         if (!empty($value)) {
@@ -50,7 +56,8 @@ class User extends Authenticatable
         }
     }
 
-    // --- Relationships (Existing) ---
+    // 🔥 RELATIONSHIPS ----------------------------------------------------------
+
     public function branch()
     {
         return $this->belongsTo(Branch::class);
@@ -90,11 +97,11 @@ class User extends Authenticatable
     {
         return $this->hasMany(Report::class, 'generated_by');
     }
-    
-    // --- Relationships (New for Hierarchy) ---
-    
+
+    // 🔥 HIERARCHY RELATIONSHIPS ------------------------------------------------
+
     /**
-     * An agent reports to a manager, who is another User.
+     * The manager this user reports to.
      */
     public function manager()
     {
@@ -102,7 +109,7 @@ class User extends Authenticatable
     }
 
     /**
-     * A manager/director has many reports (agents) under them.
+     * All users (agents) reporting under this manager.
      */
     public function reportsTo()
     {
